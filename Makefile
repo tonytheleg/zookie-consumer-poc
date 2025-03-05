@@ -8,11 +8,15 @@ run: build
 
 .PHONY: poc-up
 poc-up:
-	docker compose up -d
+	docker compose up -d --build
 
-.PHONE: consumer-logs
+.PHONY: consumer-logs
 consumer-logs:
 	for i in zookie-consumer-poc-zookie-consumer-1 zookie-consumer-poc-zookie-consumer-2 zookie-consumer-poc-zookie-consumer-3; do echo "===$${i}===" && docker logs $${i} && echo ""; done
+
+.PHONY: clean-logs
+clean-logs:
+	for i in zookie-consumer-poc-zookie-consumer-1 zookie-consumer-poc-zookie-consumer-2 zookie-consumer-poc-zookie-consumer-3; do sudo sh -c 'echo "" > $$(docker inspect --format="{{.LogPath}}" '"$${i}"')'; done
 
 .PHONY: poc-down
 poc-down:

@@ -1,6 +1,8 @@
 # Zookie Consumer POC
 
-Super simple Kafka Consumer setup that allows for testing consuming messages from a topic with Go. Settings are easily updated in Go or compose files to nail down configurations needed to ensure the right consistency of message processing
+Super simple PoC of leveraging a Kafka Consumer for consuming messages from a topic containing Zookies to update in 
+a database. The goal is to show a basic setup of how we can monitor a topic, consume messages of a specific 
+prescribed format, and update the resources in a database AND ensure updates are ordered for consistency. 
 
 ### Build
 
@@ -14,10 +16,13 @@ Super simple Kafka Consumer setup that allows for testing consuming messages fro
 
 `make poc-up`
 
-> note, the kafka server always fails first run, it will restart. You may see errors in consumers at first. This is because it takes a minute for zookeeper to setup and I didnt implement healthchecks to make this pretty.
+> note, you'll likely see errors and things fail as there are dependencies on services. This is because it takes a minute for zookeeper and postgres to setup and I didnt implement healthchecks to make this pretty.
 
 ### Print all consumer logs (for looking at message consumption output)
 make consumer-logs
+
+### If you want clean logs to start with...
+make clean-logs # will prompt for your password for sudo
 
 ### Spin down
 
@@ -50,9 +55,11 @@ Here are some useful Kafka commands you can run from inside the Kafka container 
 /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server kafka:9093 --describe --group zookie-consumer --members
 
 # produce a message to a topic
-# This example uses resource_id as a key, and the token as the value. Key and token are separeated by Kafka using the defined
+# This example uses resource_id as a key, and the token as the value. Key and token are separated by Kafka using the defined
 # separator '|' since it should never appear in the payload. Consumer logs should show that any messages with the same key will
-# always go to the same parition and therefore handled by same consumer (ordered)
+# always go to the same partition and therefore handled by same consumer (ordered)
 # to test multiple messages, you can change the resource_id or the token to show updates
-echo "'{\"resource_id\":\"my_cluster\"}'|'{\"continuationToken\":\"1a2b3c4d=\"}'" | /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server kafka:9093 --topic zookie-outbox --property parse.key=true --property key.separator='|'
+
+# look at this beaut.....
+for i in `seq 1 5`; do for RESOURCE in my_resource_one, another_resource_here, third_resource_this_is; do TOKEN=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13); echo '{"resource_id":'"\"${RESOURCE}"'"}|{"consistency_token":'"\"${TOKEN}"'"}' | /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server kafka:9093 --topic zookie-outbox --property parse.key=true --property key.separator='|'; done; done
 ```
