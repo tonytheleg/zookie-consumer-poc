@@ -36,6 +36,8 @@ services:
       - "POSTGRES_PASSWORD=tonyisawesome"
       - "POSTGRES_DB=inventory-db"
       - "PGPORT=5432"
+    volumes:
+      - ./db-files:/docker-entrypoint-initdb.d      
 
   zookie-consumer:
     build:

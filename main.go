@@ -13,12 +13,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	ResourceOne   = "my_resource_one"
-	ResourceTwo   = "another_resource_here"
-	ResourceThree = "third_resource_this_is"
-)
-
 var config = kafka.ConfigMap{
 	// Settings are based on running Kafka using the provided compose files
 	// See https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md for details
@@ -62,12 +56,6 @@ func (a *App) NewApp() {
 	err = a.db.AutoMigrate(&Resource{}, &ResourceHistory{})
 	if err != nil {
 		log.Fatal("failed to migrate database", err)
-	}
-
-	// Create initial values to test updates and ordering
-	for _, resource := range []string{ResourceOne, ResourceTwo, ResourceThree} {
-		a.db.Create(&Resource{ResourceID: resource, ConsistencyToken: "myrandomconsistencytoken"})
-		a.db.Create(&ResourceHistory{ResourceID: resource, CurrentToken: "myrandomconsistencytoken"})
 	}
 
 	// Setup consumer and topic

@@ -22,3 +22,8 @@ clean-logs:
 poc-down:
 	docker compose down
 
+.PHONY: kill-a-consumer
+kill-a-consumer:
+	docker stop zookie-consumer-poc-zookie-consumer-1
+	sleep 6
+	docker compose up -d
